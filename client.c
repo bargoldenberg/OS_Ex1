@@ -8,7 +8,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#define SERVER_PORT 5065
+#define SERVER_PORT 5072
 #define SERVER_IP_ADDRESS "127.0.0.1"
 
 typedef struct _client {

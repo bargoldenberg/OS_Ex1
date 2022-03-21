@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <signal.h>
 
-#define SERVER_PORT 5065  //The port that the server listens
+#define SERVER_PORT 5072  //The port that the server listens
 #define BUFF_SIZE 1024
 int main()
 {
@@ -97,6 +97,8 @@ int main()
                     isexit[x--]=buffer[i];
                 }
                 if(strcmp(isexit,buffer) == 0){
+                    printf("closing");
+                    close(clientSocket);
                     break;
                 }
                 printf("%s",buffer);
