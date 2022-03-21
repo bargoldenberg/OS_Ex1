@@ -3,10 +3,30 @@
 #include <string.h>
 #include <unistd.h>
 #include "client.h"
+#include <dirent.h>
+
+
 #define buffer 1024
 #define tmpfd 400
 #define stdfd 1
 
+
+int isCD(char* str,int size){
+    if(size<2){
+        return 0;
+    }
+    char cd[] = {'C','D','\0'};
+    char check[2];
+    for(int i=0;i<2;i++){
+        check[i]=str[i];
+    }
+    check[3]='\0';
+    if(!strcmp(cd,check)==0){
+        return 1;
+    }else{
+        return 0;
+    }
+}
 
 int isEcho(char* str,int size){
     if(size<4){
@@ -32,10 +52,15 @@ int main(){
     char input[buffer];
     char tcp[] = {'T','C','P',' ','P','O','R','T','\0'};
     char local[] = {'L','O','C','A','L','\0'};
+    char dir[] = {'D','I','R','\0'};
     char exit [] = {'E','X','I','T','\0'}; 
-    const char green[] ="\033[0;32m"; 
+
+    // const char green[] ="\033[0;32m"; 
+    const char green[] ="\e[0;36m"; // Fake green one !!!!!
     const char reset[] = "\033[0m";
-    const char blue[] = "\033[0;34m";
+    // const char blue[] = "\033[0;34m" 
+    const char blue[] = "\033[0;35m";  // Fake blue one !!!!!
+
     while(flag){
         char buff[buffer];
         getcwd(buff,buffer);
@@ -53,19 +78,14 @@ int main(){
         */
         if(!strcmp(tcp,input)){
             client = initClient();
-            dup2(stdfd,tmpfd);
-            dup2(client->_sock,stdfd);
+            dup2(STDOUT_FILENO,tmpfd);
+            dup2(client->_sock,STDOUT_FILENO);
         }
         if(!strcmp(local,input)){
-            //printf("Local command -->\n");
-            //sendmessage(client,exit,sizeof(exit)+1);
-            //printf("Exit Sent <--\n");
-            printf("EXIT");
-            sleep(0.5);
+            printf("%s\n",exit);
             closesock(client);
-            free(client);
             client = NULL;
-            dup2(tmpfd,stdfd);
+            dup2(tmpfd,STDOUT_FILENO);
         }
         if(!strcmp(exit,input)){
             closesock(client);
@@ -81,7 +101,50 @@ int main(){
                 message[k++] = input[i];
             }
             printf("%s\n",message);           
-        }    
+        }
+        if(!strcmp(dir,input)){
+            DIR *folder;
+            struct dirent *entry;
+            int files = 0;
+
+            folder = opendir(".");
+            if(folder == NULL){
+                perror("Unable to read directory");
+            }
+            while( (entry=readdir(folder)) ){
+                files++;
+                printf("File %3d: %s\n",files,entry->d_name);
+            }
+            closedir(folder);
+        }
+        if(isCD(input,sizeof(input))){
+            char message[sizeof(input)-1];
+            int k=0;
+            // message[k++] = '';
+            for(int i=3;i<sizeof(input);i++){
+                message[k++] = input[i];
+            }
+            int err = chdir(message);
+            if(err == -1){
+                printf("Directory Not Exists.\n");
+            }
+            /**
+             * Chdir is a system call (system function).
+             * Chdir is used for changing the current directory (similar to the shell command 'cd').
+             */
+        } 
+        // else {
+        //     /**
+        //      * NEED TO ADDD ANSWER!!!
+        //      * 
+        //      */
+        //     system(input);
+        // }
+        else{
+            // char * token = strtok(input, " ");
+
+        }
+    
     }
     return 0;
 }

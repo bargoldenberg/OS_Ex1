@@ -13,11 +13,25 @@
 
 #define SERVER_PORT 5072  //The port that the server listens
 #define BUFF_SIZE 1024
+
+/*
+*Func to check the buffer --> if The message is EXIT message.
+*/
+int isExit(char buffer[])
+{    
+    char exit [] = {'E','X','I','T','\0'}; 
+    int flag = 0;
+    for(int i=0; i<BUFF_SIZE-5 && flag!=1;i++){
+        if(buffer[i]==exit[0] && buffer[i+1]==exit[1] && buffer[i+2]==exit[2] && buffer[i+3]==exit[3] ){
+            flag=1;
+        }
+    }
+    return flag;
+}
+
 int main()
 {
-
-   signal(SIGPIPE, SIG_IGN); // on linux to prevent crash on closing socket
-     
+   signal(SIGPIPE, SIG_IGN); // on linux to prevent crash on closing socket    
     // Open the listening (server) socket
     int listeningSocket = -1;  
 	 
@@ -82,26 +96,19 @@ int main()
 	   // TODO: close the sockets
            return -1;
     	}
-      
     	printf("A new client connection accepted\n");
         char buffer[BUFF_SIZE];
         char exit[] = {'E','X','I','T','\0'};
         char isexit[5];
         while (1)
-            {
-                printf("Server: wating for data\n");
+            {                
                 bzero(buffer,BUFF_SIZE);
                 recv(clientSocket,buffer,BUFF_SIZE,0);
-                int x=4;
-                for(int i=strlen(buffer);i>=strlen(buffer)-5;i--){
-                    isexit[x--]=buffer[i];
-                }
-                if(strcmp(isexit,buffer) == 0){
-                    printf("closing");
+                if(isExit(buffer) == 1){
                     close(clientSocket);
                     break;
                 }
-                printf("%s",buffer);
+                printf("%s\n",buffer);
             }
     }
   
