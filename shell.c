@@ -8,7 +8,6 @@
 
 #define buffer 1024
 #define tmpfd 400
-#define stdfd 1
 
 
 int isCD(char* str,int size){
@@ -16,12 +15,12 @@ int isCD(char* str,int size){
         return 0;
     }
     char cd[] = {'C','D','\0'};
-    char check[2];
+    char check[3];
     for(int i=0;i<2;i++){
         check[i]=str[i];
     }
-    check[3]='\0';
-    if(!strcmp(cd,check)==0){
+    check[2]='\0';
+    if(strcmp(cd,check)==0){
         return 1;
     }else{
         return 0;
@@ -56,19 +55,19 @@ int main(){
     char exit [] = {'E','X','I','T','\0'}; 
 
     // const char green[] ="\033[0;32m"; 
-    const char green[] ="\e[0;36m"; // Fake green one !!!!!
+    const char blue[] ="\e[0;36m"; // Fake green one !!!!!
     const char reset[] = "\033[0m";
     // const char blue[] = "\033[0;34m" 
-    const char blue[] = "\033[0;35m";  // Fake blue one !!!!!
+    const char purple[] = "\033[0;35m";  // Fake blue one !!!!!
 
     while(flag){
         char buff[buffer];
         getcwd(buff,buffer);
-        printf(green);
+        printf(blue);
         printf("user@user");
         printf(reset);
         printf(":");
-        printf(blue);
+        printf(purple);
         printf("~%s",buff);
         printf(reset);
         printf("$ ");
@@ -118,7 +117,7 @@ int main(){
             closedir(folder);
         }
         if(isCD(input,sizeof(input))){
-            char message[sizeof(input)-1];
+            char message[sizeof(input)-1]={0};
             int k=0;
             // message[k++] = '';
             for(int i=3;i<sizeof(input);i++){
