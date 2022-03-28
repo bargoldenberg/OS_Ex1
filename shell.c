@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include "client.h"
 #include <dirent.h>
-
+#include <sys/wait.h>
 
 #define buffer 1024
 #define tmpfd 400
@@ -134,14 +134,23 @@ int main(){
         } 
         // else {
         //     /**
-        //      * NEED TO ADDD ANSWER!!!
+        //      * No system() is not a system call it is a function from the standard library, as we can see we basicly implemented system below. 
         //      * 
         //      */
         //     system(input);
         // }
         else{
-            // char * token = strtok(input, " ");
-
+            int pid = fork();
+            if(pid<0){
+                printf("could not fork");
+                break;
+            }
+            if(pid==0){
+                 execl("/bin/sh", "sh", "-c", input, (char *) NULL);
+                break;
+            }else{
+                wait(NULL);
+            }
         }
     
     }
