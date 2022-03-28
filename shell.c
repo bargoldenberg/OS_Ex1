@@ -45,6 +45,21 @@ int isEcho(char* str,int size){
     }
 }
 
+int isCPY(char* str, int size){
+    char copy [] = {'C','O','P','Y','\0'};
+    char cmp [5];
+    if(size<5){
+        return 0;
+    }
+    for(int i=0;i<5;i++){
+        cmp[i]=copy[i];
+    }
+    if(strcmp(cmp,copy)==0){
+        return 1;
+    }else{
+        return 0;
+    }
+}
 int main(){
     int flag =1;
     Client* client = NULL;
@@ -53,7 +68,7 @@ int main(){
     char local[] = {'L','O','C','A','L','\0'};
     char dir[] = {'D','I','R','\0'};
     char exit [] = {'E','X','I','T','\0'}; 
-
+    
     // const char green[] ="\033[0;32m"; 
     const char blue[] ="\e[0;36m"; // Fake green one !!!!!
     const char reset[] = "\033[0m";
@@ -116,6 +131,43 @@ int main(){
             }
             closedir(folder);
         }
+        if(isCPY(input,sizeof(input))){
+            char* token;
+            token = strtok(input," ");
+            token = strtok(NULL," ");
+            char* src = token;
+            token = strtok(NULL," ");
+            char* dest = token;
+
+            FILE* fsrc = fopen(src, "r");
+            FILE* fdest = fopen(dest,"w");
+            // char buff[100];
+            
+            // while(buff != EOF){
+            //     fread(buff,100,1,fsrc);
+            //     fwrite(buff,sizeof(buff),1,fdest);
+            // }
+
+            // FILE* fi = fopen(argv[1], "r"); //create the input file for reading
+
+            // if (fi == NULL)
+            //     return 1; // check file exists
+
+            int start = ftell(fsrc); // get file start address
+
+            fseek(fsrc, 0, SEEK_END); // go to end of file
+
+            int end = ftell(fsrc); // get file end address
+
+            rewind(fsrc); // go back to file beginning
+
+            fwrite(fsrc,end-start,0,fdest); // write the input file to the output file
+            fclose(fsrc);
+            fclose(fdest);
+            continue;
+
+        }
+
         if(isCD(input,sizeof(input))){
             char message[sizeof(input)-1]={0};
             int k=0;
