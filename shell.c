@@ -6,9 +6,9 @@
 #include <dirent.h>
 #include <sys/wait.h>
 
-#define buffer 1024
+#define SIZE 1024*1024
 #define tmpfd 400
-
+#define buffer 1024
 
 int isCD(char* str,int size){
     if(size<2){
@@ -52,13 +52,36 @@ int isCPY(char* str, int size){
         return 0;
     }
     for(int i=0;i<5;i++){
-        cmp[i]=copy[i];
+        cmp[i]=str[i];
     }
     if(strcmp(cmp,copy)==0){
         return 1;
     }else{
         return 0;
     }
+}
+
+int isDel(char* str,int size){
+    printf("1\n");
+    char del [] = {'D','E','L','E','T','E','\0'};
+    char cmp [7];
+    printf("2\n");
+    // if(size<7){
+    //     return 0;
+    // }
+    for(int i=0;i<6;i++){
+        cmp[i]=str[i];
+    }
+    cmp[6] = '\0';
+    for(int i=0;i<sizeof(cmp);i++){
+        if(cmp[i]!=del[i]){
+            printf("zero\n");
+            printf("cmp:%c, del:%c\n",cmp[i],del[i]);
+            return 0;
+        }
+    }
+    printf("one");
+    return 1;
 }
 int main(){
     int flag =1;
@@ -102,9 +125,10 @@ int main(){
             dup2(tmpfd,STDOUT_FILENO);
         }
         if(!strcmp(exit,input)){
-            closesock(client);
-            if(client){
+            if(client!=NULL){
+                close(client->_sock);
                 free(client);
+                client = NULL;
             }
             break;
         }
@@ -131,7 +155,7 @@ int main(){
             }
             closedir(folder);
         }
-        if(isCPY(input,sizeof(input))){
+        if(isCPY(input,sizeof(input))==1){
             char* token;
             token = strtok(input," ");
             token = strtok(NULL," ");
@@ -141,33 +165,37 @@ int main(){
 
             FILE* fsrc = fopen(src, "r");
             FILE* fdest = fopen(dest,"w");
-            // char buff[100];
-            
-            // while(buff != EOF){
-            //     fread(buff,100,1,fsrc);
-            //     fwrite(buff,sizeof(buff),1,fdest);
-            // }
-
-            // FILE* fi = fopen(argv[1], "r"); //create the input file for reading
-
-            // if (fi == NULL)
-            //     return 1; // check file exists
-
-            int start = ftell(fsrc); // get file start address
-
-            fseek(fsrc, 0, SEEK_END); // go to end of file
-
-            int end = ftell(fsrc); // get file end address
-
-            rewind(fsrc); // go back to file beginning
-
-            fwrite(fsrc,end-start,0,fdest); // write the input file to the output file
+            char tmpbuffer[SIZE];
+            size_t bytes=1;
+            while (bytes!=0){
+                bytes = fread(tmpbuffer, 1, sizeof(tmpbuffer), fsrc);
+                fwrite(tmpbuffer, 1, bytes, fdest);
+                printf("in here");
+            }
             fclose(fsrc);
             fclose(fdest);
             continue;
-
         }
-
+      
+        if(isDel(input,sizeof(input))){
+            printf("in\n");
+            char* token;
+            token = strtok(input," ");
+            token = strtok(NULL," ");
+            char* path = token;
+            int length = sizeof(path)+strlen(buff);
+            char fullpath [length];
+            int k=0;
+            for(int i=0;i<length;i++){
+                if(i<strlen(buff)){
+                    fullpath[i]=buff[i];
+                }else{
+                    fullpath[i]=path[k++];
+                }
+            }
+            unlink(path);
+            continue;
+        }
         if(isCD(input,sizeof(input))){
             char message[sizeof(input)-1]={0};
             int k=0;
@@ -198,7 +226,7 @@ int main(){
                 break;
             }
             if(pid==0){
-                 execl("/bin/sh", "sh", "-c", input, (char *) NULL);
+                execl("/bin/sh", "sh", "-c", input, (char *) NULL);
                 break;
             }else{
                 wait(NULL);
