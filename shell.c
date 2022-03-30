@@ -51,9 +51,10 @@ int isCPY(char* str, int size){
     if(size<5){
         return 0;
     }
-    for(int i=0;i<5;i++){
+    for(int i=0;i<4;i++){
         cmp[i]=str[i];
     }
+    cmp[4]='\0';
     if(strcmp(cmp,copy)==0){
         return 1;
     }else{
@@ -62,21 +63,17 @@ int isCPY(char* str, int size){
 }
 
 int isDel(char* str,int size){
-    printf("1\n");
     char del [] = {'D','E','L','E','T','E','\0'};
     char cmp [7];
-    printf("2\n");
-    // if(size<7){
-    //     return 0;
-    // }
+    if(size<7){
+        return 0;
+    }
     for(int i=0;i<6;i++){
         cmp[i]=str[i];
     }
     cmp[6] = '\0';
     for(int i=0;i<sizeof(cmp);i++){
         if(cmp[i]!=del[i]){
-            printf("zero\n");
-            printf("cmp:%c, del:%c\n",cmp[i],del[i]);
             return 0;
         }
     }
@@ -117,12 +114,14 @@ int main(){
             client = initClient();
             dup2(STDOUT_FILENO,tmpfd);
             dup2(client->_sock,STDOUT_FILENO);
+            continue;
         }
         if(!strcmp(local,input)){
             printf("%s\n",exit);
             closesock(client);
             client = NULL;
             dup2(tmpfd,STDOUT_FILENO);
+            continue;
         }
         if(!strcmp(exit,input)){
             if(client!=NULL){
@@ -138,7 +137,8 @@ int main(){
             for(int i=5;i<sizeof(input);i++){
                 message[k++] = input[i];
             }
-            printf("%s\n",message);           
+            printf("%s\n",message);
+            continue;           
         }
         if(!strcmp(dir,input)){
             DIR *folder;
@@ -154,7 +154,11 @@ int main(){
                 printf("File %3d: %s\n",files,entry->d_name);
             }
             closedir(folder);
+            continue;
         }
+        /*
+        fread fwrite and fopen are not system calls they are library functions that use system calls.
+        */
         if(isCPY(input,sizeof(input))==1){
             char* token;
             token = strtok(input," ");
@@ -185,16 +189,6 @@ int main(){
             token = strtok(input," ");
             token = strtok(NULL," ");
             char* path = token;
-            int length = sizeof(path)+strlen(buff);
-            char fullpath [length];
-            int k=0;
-            for(int i=0;i<length;i++){
-                if(i<strlen(buff)){
-                    fullpath[i]=buff[i];
-                }else{
-                    fullpath[i]=path[k++];
-                }
-            }
             unlink(path);
             continue;
         }

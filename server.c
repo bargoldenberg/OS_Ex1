@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <signal.h>
 
-#define SERVER_PORT 5072  //The port that the server listens
+#define SERVER_PORT 5070  //The port that the server listens
 #define BUFF_SIZE 1024
 
 /*
